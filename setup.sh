@@ -1,0 +1,1 @@
+git clone https://github.com/malb/lattice-estimator lattice_estimator

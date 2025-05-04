@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lattice Estimator Interface</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* spinner animation */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Optional: Style for the body font if Inter isn't default */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Hide number input arrows (spin buttons) */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0; /* Removes default margin in Firefox */
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield; /* Firefox */
+        appearance: textfield; /* Standard */
+    }
+
+    /* Center text in select */
+    select {
+        text-align-last: center; /* Centers text in select for most browsers */
+    }
+
+     /* Specific centering for the Q Value select if needed, though text-align-last should handle it */
+     #q_type {
+         text-align-last: center;
+     }
+
+     /* Style for active tab button */
+     .tab-button.active {
+         background-color: #059669; /* emerald-600 */
+         color: white;
+         font-weight: 600;
+     }
+
+  </style>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-sky-400 via-emerald-300 to-lime-200
+             dark:from-slate-800 dark:via-slate-900 dark:to-black font-inter px-4 py-8">
+
+  <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-6">
+    Lattice Estimator Interface
+  </h1>
+
+  <div class="flex justify-center gap-2 mb-6">
+      <button class="tab-button px-6 py-2 rounded-t-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 transition-colors duration-200" data-tab="lwe">LWE</button>
+      <button class="tab-button px-6 py-2 rounded-t-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 transition-colors duration-200" data-tab="ntru">NTRU</button>
+      <button class="tab-button px-6 py-2 rounded-t-lg bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200 transition-colors duration-200" data-tab="sis">SIS</button>
+  </div>
+
+
+  <div id="tab-content" class="w-full max-w-6xl">
+
+      <div id="lwe-content" class="tab-pane w-full p-8 sm:p-12 bg-white/70 dark:bg-white/10 backdrop-blur-lg
+                  rounded-b-3xl rounded-tr-3xl shadow-2xl ring-1 ring-black/10">
+
+        <form id="lweComputationForm"
+              class="flex flex-wrap sm:flex-nowrap items-end gap-6 overflow-x-auto pb-2">
+
+          <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+            <label for="lwe_n"
+                   class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              Integer&nbsp;n
+            </label>
+            <input type="number" id="lwe_n" name="n" required step="1"
+                   class="rounded-xl border border-gray-300 dark:border-slate-600
+                          bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                          px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+          </div>
+
+          <div class="flex flex-col min-w-[14rem] flex-grow w-[80%] mx-auto">
+                <label class="mb-2 font-medium text-gray-700 dark:text-gray-300">
+                Q&nbsp;Value
+                </label>
+
+                <div class="flex rounded-xl overflow-hidden border border-gray-300 dark:border-slate-600
+                            bg-white dark:bg-slate-800 w-full">
+
+                <select id="lwe_q_type" name="q_type"
+                        class="border-r border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700
+                                text-gray-700 dark:text-gray-200 pr-3 pl-8 py-2 text-center
+                                focus:outline-none cursor-pointer">
+                    <option value="q">q</option>
+                    <option value="logq" selected>log₂ q</option>
+                </select>
+
+                <input  type="number" id="lwe_q_value" name="q_value" required step="any"
+                        class="flex-grow bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100
+                                focus:ring-4 focus:ring-emerald-400 outline-none" />
+                </div>
+            </div>
+
+            <div class="flex flex-col min-w-[12rem] flex-grow w-[80%] mx-auto">
+                <label for="lwe_secret_key_dist"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Secret&nbsp;Key&nbsp;Dist.
+                </label>
+                <select id="lwe_secret_key_dist" name="secret_key_dist" required
+                        class="rounded-xl border border-gray-300 dark:border-slate-600
+                               bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100
+                               px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full cursor-pointer">
+                    <option value="Binary">Binary</option>
+                    <option value="Ternary">Ternary</option>
+                    <option value="DiscreteGaussian" selected>DiscreteGaussian</option>
+                </select>
+            </div>
+
+          <div id="lwe_sigma_s_container" class="flex flex-col min-w-[9rem] flex-grow hidden w-[80%] mx-auto">
+            <label for="lwe_sigma_s"
+                   class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              σ<sub>s</sub>
+            </label>
+            <input type="number" id="lwe_sigma_s" name="sigma_s" required step="any"
+                   class="rounded-xl border border-gray-300 dark:border-slate-600
+                          bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                          px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+          </div>
+
+          <div id="lwe_hamming_weight_container" class="flex flex-col min-w-[9rem] flex-grow hidden w-[80%] mx-auto">
+            <label for="lwe_hamming_weight"
+                   class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              Hamming&nbsp;weight
+            </label>
+            <input type="number" id="lwe_hamming_weight" name="hamming_weight" step="1"
+                   placeholder="balanced" class="rounded-xl border border-gray-300 dark:border-slate-600
+                          bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                          px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+          </div>
+
+          <div class="flex flex-col min-w-[9rem] flex-grow w-[80%] mx-auto">
+            <label for="lwe_sigma_e"
+                   class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              σ<sub>e</sub>
+            </label>
+            <input type="number" id="lwe_sigma_e" name="sigma_e" required step="any"
+                   class="rounded-xl border border-gray-300 dark:border-slate-600
+                          bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                          px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+          </div>
+
+          <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+            <label for="lwe_m"
+                   class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+              Integer&nbsp;m
+            </label>
+            <input type="number" id="lwe_m" name="m" step="1" placeholder="infinity"
+                   class="rounded-xl border border-gray-300 dark:border-slate-600
+                          bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                          px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+          </div>          
+
+        </form>
+
+        <div class="flex justify-center gap-6 mt-6">
+            <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                           active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                           transition-all duration-200" data-rough="true">
+              Estimate LWE Security (rough)
+            </button>
+             <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                           active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                           transition-all duration-200" data-rough="false">
+              Estimate LWE Security (precise)
+            </button>
+        </div>
+
+        <div class="loading-spinner hidden flex-col items-center mt-6 text-gray-700 dark:text-gray-300">
+          <div class="border-4 border-transparent border-l-emerald-500 rounded-full w-8 h-8
+                      animate-[spin_0.8s_linear_infinite]"></div>
+          <span class="mt-2 text-sm">Processing…</span>
+        </div>
+
+        <pre class="result-area mt-6 whitespace-pre-wrap break-words bg-gray-100 dark:bg-slate-800/60
+                    rounded-xl p-6 min-h-[4rem] text-gray-800 dark:text-gray-200">
+Result will appear here…
+        </pre>
+      </div>
+
+      <div id="ntru-content" class="tab-pane w-full p-8 sm:p-12 bg-white/70 dark:bg-white/10 backdrop-blur-lg
+                  rounded-b-3xl rounded-tr-3xl shadow-2xl ring-1 ring-black/10 hidden">
+
+           <form id="ntruComputationForm"
+              class="flex flex-wrap sm:flex-nowrap items-end gap-6 overflow-x-auto pb-2">
+
+              <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+                <label for="ntru_n"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Integer&nbsp;n
+                </label>
+                <input type="number" id="ntru_n" name="n" required step="1"
+                       class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+              <div class="flex flex-col min-w-[14rem] flex-grow w-[80%] mx-auto">
+                    <label class="mb-2 font-medium text-gray-700 dark:text-gray-300">
+                    Q&nbsp;Value
+                    </label>
+
+                    <div class="flex rounded-xl overflow-hidden border border-gray-300 dark:border-slate-600
+                                bg-white dark:bg-slate-800 w-full">
+
+                    <select id="ntru_q_type" name="q_type"
+                            class="border-r border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700
+                                    text-gray-700 dark:text-gray-200 pr-3 pl-8 py-2 text-center
+                                    focus:outline-none cursor-pointer">
+                        <option value="q">q</option>
+                        <option value="logq" selected>log₂ q</option>
+                    </select>
+
+                    <input  type="number" id="ntru_q_value" name="q_value" required step="any"
+                            class="flex-grow bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100
+                                    focus:ring-4 focus:ring-emerald-400 outline-none" />
+                    </div>
+                </div>
+
+                <div class="flex flex-col min-w-[12rem] flex-grow w-[80%] mx-auto">
+                    <label for="ntru_secret_key_dist"
+                           class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Secret&nbsp;Key&nbsp;Dist.
+                    </label>
+                    <select id="ntru_secret_key_dist" name="secret_key_dist" required
+                            class="rounded-xl border border-gray-300 dark:border-slate-600
+                                   bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100
+                                   px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full cursor-pointer">
+                        <option value="Binary">Binary</option>
+                        <option value="Ternary">Ternary</option>
+                        <option value="DiscreteGaussian" selected>DiscreteGaussian</option>
+                    </select>
+                </div>
+
+              <div id="ntru_sigma_s_container" class="flex flex-col min-w-[9rem] flex-grow hidden w-[80%] mx-auto">
+                <label for="ntru_sigma_s"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  σ<sub>s</sub>
+                </label>
+                <input type="number" id="ntru_sigma_s" name="sigma_s" required step="any"
+                       class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+              <div id="ntru_hamming_weight_container" class="flex flex-col min-w-[9rem] flex-grow hidden w-[80%] mx-auto">
+                <label for="ntru_hamming_weight"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Hamming&nbsp;weight
+                </label>
+                <input type="number" id="ntru_hamming_weight" name="hamming_weight" step="1"
+                       placeholder="balanced" class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+              <div class="flex flex-col min-w-[9rem] flex-grow w-[80%] mx-auto">
+                <label for="ntru_sigma_e"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  σ<sub>e</sub>
+                </label>
+                <input type="number" id="ntru_sigma_e" name="sigma_e" required step="any"
+                       class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+              <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+                <label for="ntru_m"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Integer&nbsp;m
+                </label>
+                <input type="number" id="ntru_m" name="m" step="1" placeholder="infinity"
+                       class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+            </form>
+
+            <div class="flex justify-center gap-6 mt-6">
+                <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                               active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                               transition-all duration-200" data-rough="true">
+                  Estimate NTRU Security (rough)
+                </button>
+                 <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                               active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                               transition-all duration-200" data-rough="false">
+                  Estimate NTRU Security (precise)
+                </button>
+            </div>
+
+            <div class="loading-spinner hidden flex-col items-center mt-6 text-gray-700 dark:text-gray-300">
+              <div class="border-4 border-transparent border-l-emerald-500 rounded-full w-8 h-8
+                          animate-[spin_0.8s_linear_infinite]"></div>
+              <span class="mt-2 text-sm">Processing…</span>
+            </div>
+
+            <pre class="result-area mt-6 whitespace-pre-wrap break-words bg-gray-100 dark:bg-slate-800/60
+                        rounded-xl p-6 min-h-[4rem] text-gray-800 dark:text-gray-200">
+Result will appear here…
+            </pre>
+      </div>
+
+      <div id="sis-content" class="tab-pane w-full p-8 sm:p-12 bg-white/70 dark:bg-white/10 backdrop-blur-lg
+                  rounded-b-3xl rounded-tr-3xl shadow-2xl ring-1 ring-black/10 hidden">
+
+          <form id="sisComputationForm"
+              class="flex flex-wrap sm:flex-nowrap items-end gap-6 overflow-x-auto pb-2">
+
+              <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+                <label for="sis_n"
+                       class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Integer&nbsp;n
+                </label>
+                <input type="number" id="sis_n" name="n" required step="1"
+                       class="rounded-xl border border-gray-300 dark:border-slate-600
+                              bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                              px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+              </div>
+
+              <div class="flex flex-col min-w-[14rem] flex-grow w-[80%] mx-auto">
+                    <label class="mb-2 font-medium text-gray-700 dark:text-gray-300">
+                    Q&nbsp;Value
+                    </label>
+
+                    <div class="flex rounded-xl overflow-hidden border border-gray-300 dark:border-slate-600
+                                bg-white dark:bg-slate-800 w-full">
+
+                    <select id="sis_q_type" name="q_type"
+                            class="border-r border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-700
+                                    text-gray-700 dark:text-gray-200 pr-3 pl-8 py-2 text-center
+                                    focus:outline-none cursor-pointer">
+                        <option value="q">q</option>
+                        <option value="logq" selected>log₂ q</option>
+                    </select>
+
+                    <input  type="number" id="sis_q_value" name="q_value" required step="any"
+                            class="flex-grow bg-transparent px-4 py-2 text-gray-900 dark:text-gray-100
+                                    focus:ring-4 focus:ring-emerald-400 outline-none" />
+                    </div>
+                </div>
+
+                <div class="flex flex-col min-w-[12rem] flex-grow w-[80%] mx-auto">
+                    <label for="sis_length_bound"
+                           class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                      Length&nbsp;bound
+                    </label>
+                    <input type="number" id="sis_length_bound" name="length_bound" required step="1"
+                           class="rounded-xl border border-gray-300 dark:border-slate-600
+                                  bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                                  px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+                </div>
+
+                <div class="flex flex-col min-w-[8rem] flex-grow w-[80%] mx-auto">
+                  <label for="sis_m"
+                         class="mb-2 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    Integer&nbsp;m
+                  </label>
+                  <input type="number" id="sis_m" name="m" step="1" placeholder="automatic"
+                         class="rounded-xl border border-gray-300 dark:border-slate-600
+                                bg-white text-gray-900 dark:bg-slate-800 dark:text-gray-100
+                                px-4 py-2 focus:ring-4 focus:ring-emerald-400 outline-none w-full" />
+                </div>
+
+            </form>
+
+            <div class="flex justify-center gap-6 mt-6">
+                <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                               active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                               transition-all duration-200" data-rough="true">
+                  Estimate SIS Security (rough)
+                </button>
+                 <button class="submit-button px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600
+                               active:bg-emerald-700 text-white font-semibold shadow-lg ring-emerald-700/40 ring-2
+                               transition-all duration-200" data-rough="false">
+                  Estimate SIS Security (precise)
+                </button>
+            </div>
+
+            <div class="loading-spinner hidden flex-col items-center mt-6 text-gray-700 dark:text-gray-300">
+              <div class="border-4 border-transparent border-l-emerald-500 rounded-full w-8 h-8
+                          animate-[spin_0.8s_linear_infinite]"></div>
+              <span class="mt-2 text-sm">Processing…</span>
+            </div>
+
+            <pre class="result-area mt-6 whitespace-pre-wrap break-words bg-gray-100 dark:bg-slate-800/60
+                        rounded-xl p-6 min-h-[4rem] text-gray-800 dark:text-gray-200">
+Result will appear here…
+            </pre>
+      </div>
+
+  </div>
+
+
+  <script>
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    // Function to show a specific tab and hide others
+    function showTab(tabId) {
+        tabPanes.forEach(pane => {
+            if (pane.id === tabId + '-content') {
+                pane.classList.remove('hidden');
+            } else {
+                pane.classList.add('hidden');
+            }
+        });
+
+        tabButtons.forEach(button => {
+            if (button.dataset.tab === tabId) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+
+        // Trigger visibility toggle for the newly active tab's conditional inputs
+        const activePane = document.getElementById(tabId + '-content');
+        if (activePane) {
+             const secretKeyDistSelect = activePane.querySelector('[name="secret_key_dist"]');
+             if (secretKeyDistSelect) {
+                 // Find the toggle function associated with this form/pane
+                 // This requires a slight refactor to make the toggle function accessible or re-usable
+                 // For now, we'll call it directly, assuming the structure is consistent
+                 const sigmaSContainer = activePane.querySelector('[id$="_sigma_s_container"]');
+                 const hammingWeightContainer = activePane.querySelector('[id$="_hamming_weight_container"]');
+                 const sigmaSInput = activePane.querySelector('[id$="_sigma_s"]');
+                 const hammingWeightInput = activePane.querySelector('[id$="_hamming_weight"]');
+
+                 // Re-implement the toggle logic here for simplicity with current structure
+                 const selectedDist = secretKeyDistSelect.value;
+
+                 if (sigmaSContainer) sigmaSContainer.classList.add('hidden');
+                 if (hammingWeightContainer) hammingWeightContainer.classList.add('hidden');
+
+                 if (sigmaSInput) sigmaSInput.required = false;
+                 if (hammingWeightInput) hammingWeightInput.required = false;
+
+                 if (sigmaSInput) sigmaSInput.value = '';
+                 if (hammingWeightInput) hammingWeightInput.value = '';
+
+
+                 if (selectedDist === 'DiscreteGaussian' && sigmaSContainer) {
+                     sigmaSContainer.classList.remove('hidden');
+                     if (sigmaSInput) sigmaSInput.required = true;
+                 } else if ((selectedDist === 'Binary' || selectedDist === 'Ternary') && hammingWeightContainer) {
+                     hammingWeightContainer.classList.remove('hidden');
+                 }
+             }
+        }
+    }
+
+    // Add click listeners to tab buttons
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            showTab(button.dataset.tab);
+        });
+    });
+
+    // Show the default tab (LWE) on page load
+    showTab('lwe');
+
+
+    // --- Existing Form Submission Logic (Modified to work with current active form) ---
+
+    // Get references to elements within each tab (using class selectors now)
+    const forms = document.querySelectorAll('.tab-pane form');
+
+    forms.forEach(form => {
+        const resultDiv = form.parentElement.querySelector('.result-area');
+        const loadingDiv = form.parentElement.querySelector('.loading-spinner');
+        // Note: secretKeyDistSelect, sigmaSContainer, etc. are now scoped within the form's parent element lookup
+        // This is handled within the handleSubmission function now.
+
+        // Prevent the default form submission for this specific form
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+
+        // Function to handle button clicks and submit for this specific form
+        async function handleSubmission(isRough) {
+            // Find elements relative to the form's parent (the tab pane)
+            const currentResultDiv = form.parentElement.querySelector('.result-area');
+            const currentLoadingDiv = form.parentElement.querySelector('.loading-spinner');
+            const currentSecretKeyDistSelect = form.querySelector('[name="secret_key_dist"]');
+            const currentSigmaSInput = form.querySelector('[id$="_sigma_s"]');
+            const currentHammingWeightInput = form.querySelector('[id$="_hamming_weight"]');
+
+
+            if (currentResultDiv) currentResultDiv.textContent = ''; // Clear previous result
+            if (currentLoadingDiv) currentLoadingDiv.classList.remove('hidden'); // Show loading spinner
+
+            try {
+                const formData = new FormData(form);
+
+                // Determine the current active tab's ID
+                let activeTabId = null;
+                tabPanes.forEach(pane => {
+                    if (!pane.classList.contains('hidden')) {
+                        activeTabId = pane.id.replace('-content', '');
+                    }
+                });
+
+                // Append the 'problem' parameter with the active tab's ID
+                if (activeTabId) {
+                    formData.append('problem', activeTabId);
+                }
+
+                // Append the 'rough' flag based on which button was clicked
+                formData.append('rough', isRough);
+
+                // Use fetch API to send a POST request to the /compute endpoint
+                const res      = await fetch('/compute', { method: 'POST', body: formData });
+
+                // Check if the response status is OK (status in the range 200-299)
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                // Parse the JSON response
+                const data = await res.json();
+                // Update the result div with the 'result' field from the JSON data
+                if (currentResultDiv) currentResultDiv.textContent = data.result ?? 'No result field in response.';
+            } catch (err) {
+                console.error('Fetch error:', err);
+                if (currentResultDiv) currentResultDiv.textContent = `Error fetching computation result: ${err.message}`;
+            } finally {
+                if (currentLoadingDiv) currentLoadingDiv.classList.add('hidden');
+            }
+        }
+
+        // Add click listeners to the submit buttons for this specific form
+        const submitButtons = form.parentElement.querySelectorAll('.submit-button');
+         submitButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const isRough = button.dataset.rough === 'true';
+                handleSubmission(isRough);
+            });
+        });
+
+        // Re-apply the conditional input visibility logic on tab switch
+        const secretKeyDistSelect = form.querySelector('[name="secret_key_dist"]');
+        if (secretKeyDistSelect) {
+             secretKeyDistSelect.addEventListener('change', () => {
+                 const sigmaSContainer = form.querySelector('[id$="_sigma_s_container"]');
+                 const hammingWeightContainer = form.querySelector('[id$="_hamming_weight_container"]');
+                 const sigmaSInput = form.querySelector('[id$="_sigma_s"]');
+                 const hammingWeightInput = form.querySelector('[id$="_hamming_weight"]');
+                 const selectedDist = secretKeyDistSelect.value;
+
+                 if (sigmaSContainer) sigmaSContainer.classList.add('hidden');
+                 if (hammingWeightContainer) hammingWeightContainer.classList.add('hidden');
+
+                 if (sigmaSInput) sigmaSInput.required = false;
+                 if (hammingWeightInput) hammingWeightInput.required = false;
+
+                 if (sigmaSInput) sigmaSInput.value = '';
+                 if (hammingWeightInput) hammingWeightInput.value = '';
+
+                 if (selectedDist === 'DiscreteGaussian' && sigmaSContainer) {
+                     sigmaSContainer.classList.remove('hidden');
+                     if (sigmaSInput) sigmaSInput.required = true;
+                 } else if ((selectedDist === 'Binary' || selectedDist === 'Ternary') && hammingWeightContainer) {
+                     hammingWeightContainer.classList.remove('hidden');
+                 }
+             });
+             // Initial call for each form on load
+             const sigmaSContainer = form.querySelector('[id$="_sigma_s_container"]');
+             const hammingWeightContainer = form.querySelector('[id$="_hamming_weight_container"]');
+             const sigmaSInput = form.querySelector('[id$="_sigma_s"]');
+             const hammingWeightInput = form.querySelector('[id$="_hamming_weight"]');
+             const selectedDist = secretKeyDistSelect.value;
+
+             if (sigmaSContainer) sigmaSContainer.classList.add('hidden');
+             if (hammingWeightContainer) hammingWeightContainer.classList.add('hidden');
+
+             if (sigmaSInput) sigmaSInput.required = false;
+             if (hammingWeightInput) hammingWeightInput.required = false;
+
+             if (sigmaSInput) sigmaSInput.value = '';
+             if (hammingWeightInput) hammingWeightInput.value = '';
+
+             if (selectedDist === 'DiscreteGaussian' && sigmaSContainer) {
+                 sigmaSContainer.classList.remove('hidden');
+                 if (sigmaSInput) sigmaSInput.required = true;
+             } else if ((selectedDist === 'Binary' || selectedDist === 'Ternary') && hammingWeightContainer) {
+                 hammingWeightContainer.classList.remove('hidden');
+             }
+        }
+    });
+
+
+  </script>
+</body>
+</html>
