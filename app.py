@@ -62,13 +62,13 @@ def compute():
             sigma_e = float(sigma_e_str)
             # Determine the secret key distribution (Xs) based on user selection
             if secret_key_dist_type == 'Binary':
-                if hamming_weight_str is "":
+                if hamming_weight_str == "":
                     Xs = ND.UniformMod(2)
                 else:
                     hamming_weight = int(hamming_weight_str)
                     Xs = ND.SparseBinary(hw=hamming_weight)
             elif secret_key_dist_type == 'Ternary':
-                if hamming_weight_str is "":
+                if hamming_weight_str == "":
                     Xs = ND.UniformMod(2)
                 else:
                     hamming_weight = int(hamming_weight_str)
@@ -118,13 +118,13 @@ def compute():
             sigma_e = float(sigma_e_str)
             # Determine the secret key distribution (Xs) based on user selection
             if secret_key_dist_type == 'Binary':
-                if hamming_weight_str is "":
+                if hamming_weight_str == "":
                     Xs = ND.UniformMod(2)
                 else:
                     hamming_weight = int(hamming_weight_str)
                     Xs = ND.SparseBinary(hw=hamming_weight)
             elif secret_key_dist_type == 'Ternary':
-                if hamming_weight_str is "":
+                if hamming_weight_str == "":
                     Xs = ND.UniformMod(2)
                 else:
                     hamming_weight = int(hamming_weight_str)
